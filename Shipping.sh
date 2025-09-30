@@ -41,7 +41,7 @@ dnf install maven -y &>>LOG_FILE
 VALIDATE $? "Installing maven and java"
 
 id roboshop &>>LOG_FILE
-if [$? -ne 0]
+if [ $USERID -ne 0 ]
 then
     useradd --system --home /app --shell /sbin/nologin --comment "roboshop system user" roboshop
     VALIDATE $? "Creating roboshop system user"
@@ -49,10 +49,12 @@ else
     echo -e "System user roboshop already created ... $Y SKIPPING $N"
 fi
 
-rf -rm /app/*
+rf -rf /app/* 
 mkdir /app 
 cd /app 
-unzip /tmp/shipping.zip &>>LOG_FILE
+unzip /tmp/shipping.zip &>>$LOG_FILE 
+VALIDATE $? "unzipping shipping"
+
 VALIDATE $? "unzipping shipping"
 
 
