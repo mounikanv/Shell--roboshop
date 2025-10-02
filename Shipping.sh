@@ -23,8 +23,8 @@ else
     echo "You are running with root access" | tee -a $LOG_FILE
 fi
 
-#echo "Please enter root password to setup"
-#read -s MYSQL_ROOT_PASSWORD
+echo "Please enter root password to setup"
+read -s MYSQL_ROOT_PASSWORD
 
 # validate functions takes input as exit status, what command they tried to install
 VALIDATE(){
@@ -37,57 +37,55 @@ VALIDATE(){
     fi
 }
 
-dnf install maven -y &>>LOG_FILE
-VALIDATE $? "Installing maven and java"
+dnf install maven -y &>>$LOG_FILE
+VALIDATE $? "Installing Maven and Java"
 
-id roboshop &>>LOG_FILE
-if [ $USERID -ne 0 ]
+id roboshop &>>$LOG_FILE
+if [ $? -ne 0 ]
 then
-    useradd --system --home /app --shell /sbin/nologin --comment "roboshop system user" roboshop
+    useradd --system --home /app --shell /sbin/nologin --comment "roboshop system user" roboshop &>>$LOG_FILE
     VALIDATE $? "Creating roboshop system user"
 else
     echo -e "System user roboshop already created ... $Y SKIPPING $N"
 fi
 
-
-rm -rf /app/* 
 mkdir -p /app 
-curl -L -o /tmp/shipping.zip https://roboshop-artifacts.s3.amazonaws.com/shipping-v3.zip 
+VALIDATE $? "Creating app directory"
+
+curl -o /tmp/shipping.zip https://roboshop-artifacts.s3.amazonaws.com/shipping-v3.zip &>>$LOG_FILE
+VALIDATE $? "Downloading shipping"
+
+rm -rf /app/*
 cd /app 
-unzip /tmp/shipping.zip &>>$LOG_FILE 
+unzip /tmp/shipping.zip &>>$LOG_FILE
 VALIDATE $? "unzipping shipping"
 
-
-
-
-mvn clean package &>>LOG_FILE 
+mvn clean package  &>>$LOG_FILE
 VALIDATE $? "Packaging the shipping application"
 
-mv target/shipping-1.0.jar shipping.jar &>>LOG_FILE
+mv target/shipping-1.0.jar shipping.jar  &>>$LOG_FILE
 VALIDATE $? "Moving and renaming Jar file"
 
 cp $SCRIPT_DIR/shipping.service /etc/systemd/system/shipping.service
 
-systemctl daemon-reload &>>LOG_FILE
+systemctl daemon-reload &>>$LOG_FILE
 VALIDATE $? "Daemon Realod"
 
-systemctl enable shipping &>>LOG_FILE
+systemctl enable shipping  &>>$LOG_FILE
 VALIDATE $? "Enabling Shipping"
 
-
-systemctl start shipping &>>LOG_FILE
+systemctl start shipping &>>$LOG_FILE
 VALIDATE $? "Starting Shipping"
 
+dnf install mysql -y  &>>$LOG_FILE
+VALIDATE $? "Install MySQL"
 
-dnf install mysql -y &>>LOG_FILE
-VALIDATE $? "Installing my Sql"
-
-mysql -h <MYSQL-SERVER-IPADDRESS> -uroot -pRoboShop@1 < /app/db/schema.sql
+mysql -h mysql.daws84s.site -u root -pRoboShop@1 -e 'use cities' &>>$LOG_FILE
 if [ $? -ne 0 ]
 then
-    mysql -h mysql.mounika.site -uroot -pRoboShop@1 < /app/db/schema.sql &>>$LOG_FILE
-    mysql -h mysql.mounika.site -uroot -pRoboShop@1 < /app/db/app-user.sql  &>>$LOG_FILE
-    mysql -h mysql.mounika.site -uroot -pRoboShop@1 < /app/db/master-data.sql &>>$LOG_FILE
+    mysql -h mysql.daws84s.site -uroot -pRoboShop@1 < /app/db/schema.sql &>>$LOG_FILE
+    mysql -h mysql.daws84s.site -uroot -pRoboShop@1 < /app/db/app-user.sql  &>>$LOG_FILE
+    mysql -h mysql.daws84s.site -uroot -pRoboShop@1 < /app/db/master-data.sql &>>$LOG_FILE
     VALIDATE $? "Loading data into MySQL"
 else
     echo -e "Data is already loaded into MySQL ... $Y SKIPPING $N"
@@ -100,4 +98,3 @@ END_TIME=$(date +%s)
 TOTAL_TIME=$(( $END_TIME - $START_TIME ))
 
 echo -e "Script exection completed successfully, $Y time taken: $TOTAL_TIME seconds $N" | tee -a $LOG_FILE
-
