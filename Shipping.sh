@@ -50,7 +50,7 @@ else
 fi
 
 
-rf -rf /app/* 
+rm -rf /app/* 
 mkdir /app 
 cd /app 
 unzip /tmp/shipping.zip &>>$LOG_FILE 
