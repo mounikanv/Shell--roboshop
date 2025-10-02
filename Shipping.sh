@@ -49,6 +49,7 @@ else
     echo -e "System user roboshop already created ... $Y SKIPPING $N"
 fi
 
+1
 rf -rf /app/* 
 mkdir /app 
 cd /app 
