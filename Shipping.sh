@@ -51,12 +51,13 @@ fi
 
 
 rm -rf /app/* 
-mkdir /app 
+mkdir -p /app 
+curl -L -o /tmp/shipping.zip https://roboshop-artifacts.s3.amazonaws.com/shipping-v3.zip 
 cd /app 
 unzip /tmp/shipping.zip &>>$LOG_FILE 
 VALIDATE $? "unzipping shipping"
 
-VALIDATE $? "unzipping shipping"
+
 
 
 mvn clean package &>>LOG_FILE 
