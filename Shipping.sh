@@ -80,12 +80,12 @@ VALIDATE $? "Starting Shipping"
 dnf install mysql -y  &>>$LOG_FILE
 VALIDATE $? "Install MySQL"
 
-mysql -h mysql.daws84s.site -u root -pRoboShop@1 -e 'use cities' &>>$LOG_FILE
+mysql -h mysql.mounika.site -u root -pRoboShop@1 -e 'use cities' &>>$LOG_FILE
 if [ $? -ne 0 ]
 then
-    mysql -h mysql.daws84s.site -uroot -pRoboShop@1 < /app/db/schema.sql &>>$LOG_FILE
-    mysql -h mysql.daws84s.site -uroot -pRoboShop@1 < /app/db/app-user.sql  &>>$LOG_FILE
-    mysql -h mysql.daws84s.site -uroot -pRoboShop@1 < /app/db/master-data.sql &>>$LOG_FILE
+    mysql -h mysql.mounika.site -uroot -pRoboShop@1 < /app/db/schema.sql &>>$LOG_FILE
+    mysql -h mysql.mounika.site -uroot -pRoboShop@1 < /app/db/app-user.sql  &>>$LOG_FILE
+    mysql -h mysql.mounika.site -uroot -pRoboShop@1 < /app/db/master-data.sql &>>$LOG_FILE
     VALIDATE $? "Loading data into MySQL"
 else
     echo -e "Data is already loaded into MySQL ... $Y SKIPPING $N"
