@@ -23,8 +23,8 @@ else
     echo "You are running with root access" | tee -a $LOG_FILE
 fi
 
-echo "Please enter rabbitmq password to setup"
-read -s RABBITMQ_PASSWD
+#echo "Please enter rabbitmq password to setup"
+#read -s RABBITMQ_PASSWD
 
 # validate functions takes input as exit status, what command they tried to install
 VALIDATE(){
