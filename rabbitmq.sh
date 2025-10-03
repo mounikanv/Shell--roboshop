@@ -26,7 +26,7 @@ fi
 #echo "Please enter rabbitmq password to setup"
 #read -s RABBITMQ_PASSWD
 
-# validate functions takes input as exit status, what command they tried to install
+# VALIDATE functions takes input as exit status, what command they tried to install
 VALIDATE(){
     if [ $1 -eq 0 ]
     then
@@ -48,12 +48,12 @@ systemctl enable rabbitmq-server &>>LOG_FILE
 VALIDATE $? "Enabling rabbitmq server"
 
 systemctl start rabbitmq-server &>>LOG_FILE
-Validate $? "Starting rabbitmq server"
+VALIDATE $? "Starting rabbitmq server"
 
 rabbitmqctl add_user roboshop roboshop123 &>>LOG_FILE
 rabbitmqctl set_permissions -p / roboshop ".*" ".*" ".*" &>>LOG_FILE
 
-END_TIME=$(DATE +%S)
+END_TIME=$(date +%S)
 TOTAL_TIME=$(( $START_TIME - $END_TIME ))
 
 echo -e "Script exection completed successfully, $Y time taken: $TOTAL_TIME seconds $N" | tee -a $LOG_FILE
