@@ -84,10 +84,10 @@ VALID $? "copying mongo repos"
 dnf install mongodb-mongosh -y &>>$log_file
 VALID $? "Installing Mongo Client"
 
-STATUS=$(mongosh --host mongodb.84dev.store --eval 'db.getMongo().getDBNames().indexOf("catalogue")')
+STATUS=$(mongosh --host mongodb.mounika.site --eval 'db.getMongo().getDBNames().indexOf("catalogue")')
 if [ $STATUS -lt 0 ]
 then
-   mongosh --host mongodb.84dev.store</app/db/master-data.js &>>$log_file
+   mongosh --host mongodb.mounika.site</app/db/master-data.js &>>$log_file
 VALID $? "Loading master data to site"
 else
     echo -e "Data is already loaded ... $Y SKIPPING $N"

@@ -79,16 +79,16 @@ VALID $? "Enabling and starting shipping"
 dnf install mysql -y  &>>$log_file
 VALID $? "Installing mysql"
 
-mysql -h mysql.84dev.store -uroot -pRoboShop@1 "use cities"
+mysql -h mysql.mounika.site -uroot -pRoboShop@1 "use cities"
 if [ $? -ne 0 ]
 then 
-    mysql -h mysql.84dev.store -uroot -pRoboShop@1 < /app/db/schema.sql &>>$log_file
+    mysql -h mysql.mounika.site -uroot -pRoboShop@1 < /app/db/schema.sql &>>$log_file
     VALID $? "Loading schema to IP"
 
-    mysql -h mysql.84dev.store -uroot -pRoboShop@1 < /app/db/app-user.sql &>>$log_file
+    mysql -h mysql.mounika.site -uroot -pRoboShop@1 < /app/db/app-user.sql &>>$log_file
     VALID $? "Loading userdata to IP"
 
-    mysql -h mysql.84dev.store -uroot -pRoboShop@1 < /app/db/master-data.sql &>>$log_file
+    mysql -h mysql.mounika.site -uroot -pRoboShop@1 < /app/db/master-data.sql &>>$log_file
     VALID $? "Loading MasterData to IP"
 else
       echo -e "Data already loaded...$Y Skipping $N"
