@@ -37,20 +37,12 @@ else
 fi 
 }
 
-cp mongo.repo /etc/yum.repos.d/mongo.repo
-VALID $? "Copying repos"
+dnf install mysql-server -y &>>$log_file
+VALID $? "mysql installation"
 
-dnf install mongodb-org -y  &>>$log_file
-VALID $? "Installing mongodb"
+systemctl enable mysqld &>>$log_file
+systemctl start mysqld &>>$log_file
+VALID $? "starting mysql" 
 
-systemctl enable mongod &>>$log_file
-VALID $? "Enabling mongodb"
-
-systemctl start mongod &>>$log_file
-VALID $? "Starting mongodb"
-
-sed -i 's/127.0.0.1/0.0.0.0/g' /etc/mongod.conf &>>$log_file
-VALID $? "Substitiuting localhost for remote connections"
-
-systemctl restart mongod &>>$log_file
-VALID $? "Restarting mongodb"
+mysql_secure_installation --set-root-pass RoboShop@1 &>>$log_file
+VALID $? "Password set "
