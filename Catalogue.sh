@@ -1,92 +1,94 @@
 #!/bin/bash
 
+#-----1-----
 USERID=$(id -u)
+
 R="\e[31m"
 G="\e[32m"
 Y="\e[33m"
 N="\e[0m"
-LOGS_FOLDER="/var/log/roboshop-logs"
-SCRIPT_NAME=$(echo $0 | cut -d "." -f1)
-LOG_FILE="$LOGS_FOLDER/$SCRIPT_NAME.log"
-SCRIPT_DIR=$PWD
 
-mkdir -p $LOGS_FOLDER
-echo "Script started executing at: $(date)" | tee -a $LOG_FILE
+log_folder="/var/log/roboshop"
+script_name=$(echo $0 | cut -d "." -f1) 
+log_file="$log_folder/$script_name.log"
 
-# check the user has root priveleges or not
-if [ $USERID -ne 0 ]
-then
-    echo -e "$R ERROR:: Please run this script with root access $N" | tee -a $LOG_FILE
-    exit 1 #give other than 0 upto 127
+mkdir -p $log_folder
+
+pwd=$PWD
+
+
+#checks user id
+if [ $USERID -eq 0 ]
+
+then 
+   echo -e "$G User has root access " | tee -a $log_file
 else
-    echo "You are running with root access" | tee -a $LOG_FILE
+   echo -e "$R User doesn't have root access " | tee -a $log_file
+   exit 1
 fi
 
-# validate functions takes input as exit status, what command they tried to install
-VALIDATE(){
-    if [ $1 -eq 0 ]
-    then
-        echo -e "$2 is ... $G SUCCESS $N" | tee -a $LOG_FILE
-    else
-        echo -e "$2 is ... $R FAILURE $N" | tee -a $LOG_FILE
-        exit 1
-    fi
+
+VALID() {
+if [ $1 -eq 0 ]
+then
+    echo -e "$N $2 is ....$G Successful" | tee -a $log_file
+else
+    echo -e "$N $2 is ....$R Failure" | tee -a $log_file
+    exit 1
+fi 
 }
 
-dnf module disable nodejs -y &>>LOG-FILE
-VALIDATE $? "Disabling defalt nodejs:20"
+dnf module disable nodejs -y &>>$log_file
+VALID $? "Disabling nodejs"
 
-dnf module enable nodejs:20 -y &>>LOG_FILE
-VALIDATE $? "Enabling nodejs:20"
+dnf module enable nodejs:20 -y &>>$log_file
+VALID $? "Enabling nodejs"
 
-dnf install nodejs -y &>>LOG_FILE
-VALIDATE $? "Installing nodejs:20" 
-
-
+dnf install nodejs -y &>>$log_file &>>$log_file
+VALID $? "Installing nodejs"
 
 id roboshop
-if [ $? -ne 0 ]
-then
-    useradd --system --home /app --shell /sbin/nologin --comment "roboshop system user" roboshop &>>$LOG_FILE
-    VALIDATE $? "Creating roboshop system user"
-else
-    echo -e "System user roboshop already created ... $Y SKIPPING $N"
+if [ $? -ne 0 ] 
+then 
+useradd --system --home /app --shell /sbin/nologin --comment "roboshop system user" roboshop &>>$log_file
+else 
+echo -e "User already exists....$Y Skipping $N"
 fi
 
-mkdir -p /app 
-VALIDATE $? "Creating app directory"
 
-curl -o /tmp/catalogue.zip https://roboshop-artifacts.s3.amazonaws.com/catalogue-v3.zip 
-VALIDATE $? "Downloading Catalogue"
+mkdir -p /app  &>>$log_file
+VALID $? "Creating Directory"
+
+curl -o /tmp/catalogue.zip https://roboshop-artifacts.s3.amazonaws.com/catalogue-v3.zip  &>>$log_file
+VALID $? "Downloading Zipfile"
 
 rm -rf /app/*
-cd /app 
-unzip /tmp/catalogue.zip
-VALIDATE $? "unzipping catalogue"
+cd /app  &>>$log_file
+unzip /tmp/catalogue.zip &>>$log_file
+VALID $? "Unzipping into directory" 
 
-npm install &>>$LOG_FILE
-VALIDATE $? "Installing Dependencies"
+npm install &>>$log_file
+VALID $? "Installing nodepackage manager"
 
+cp $pwd/catalogue.service /etc/systemd/system/catalogue.service &>>$log_file
+VALID $? "Copying service"
 
-cp $SCRIPT_DIR/catalogue.service /etc/systemd/system/catalogue.service
-VALIDATE $? "Copying catalogue service"
+systemctl daemon-reload &>>$log_file
+systemctl enable catalogue  &>>$log_file
+systemctl start catalogue &>>$log_file
+VALID $? "Starting catalogue" 
 
+cp $pwd/mongo.repo /etc/yum.repos.d/mongo.repo &>>$log_file
+VALID $? "copying mongo repos"
 
-systemctl daemon-reload &>>$LOG_FILE
-systemctl enable catalogue &>>$LOG_FILE
-systemctl start catalogue
-VALIDATE $? "Starting Catalogue"
+dnf install mongodb-mongosh -y &>>$log_file
+VALID $? "Installing Mongo Client"
 
-cp $SCRIPT_DIR/mongo.repo /etc/yum.repos.d/mongo.repo 
-dnf install mongodb-mongosh -y &>>$LOG_FILE
-VALIDATE $? "Installing MongoDB Client"
-
-
-STATUS=$(mongosh --host mongodb.daws84s.site --eval 'db.getMongo().getDBNames().indexOf("catalogue")')
+STATUS=$(mongosh --host mongodb.84dev.store --eval 'db.getMongo().getDBNames().indexOf("catalogue")')
 if [ $STATUS -lt 0 ]
 then
-    mongosh --host mongodb.daws84s.site </app/db/master-data.js &>>$LOG_FILE
-    VALIDATE $? "Loading data into MongoDB"
+   mongosh --host mongodb.84dev.store</app/db/master-data.js &>>$log_file
+VALID $? "Loading master data to site"
 else
     echo -e "Data is already loaded ... $Y SKIPPING $N"
 fi
