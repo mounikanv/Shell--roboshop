@@ -85,6 +85,7 @@ dnf install mongodb-mongosh -y &>>$log_file
 VALID $? "Installing Mongo Client"
 
 STATUS=$(mongosh --host mongodb.mounika.site --eval 'db.getMongo().getDBNames().indexOf("catalogue")')
+
 if [ $STATUS -lt 0 ]
 then
    mongosh --host mongodb.mounika.site</app/db/master-data.js &>>$log_file
